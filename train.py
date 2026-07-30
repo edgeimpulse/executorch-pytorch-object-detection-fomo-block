@@ -17,8 +17,8 @@ Custom parameters defined in parameters.json are passed as extra arguments:
 Input data (already pre-processed and pixel-scaled by Edge Impulse):
 
     X_split_train.npy / X_split_test.npy   float32, NHWC (batch, height, width, channels)
-    Y_split_train.npy / Y_split_test.npy   object array of per-sample dicts:
-        {"sampleId": <int>, "boundingBoxes": [{"label", "x", "y", "w", "h"}, ...]}
+    Y_split_train.npy / Y_split_test.npy   JSON *text* (despite the .npy extension):
+        [{"sampleId": <int>, "boundingBoxes": [{"label", "x", "y", "w", "h"}, ...]}, ...]
 
 FOMO turns bounding boxes into a coarse class grid (the input downsampled by 8)
 where each cell holds the class of the object centred on it, or background. We
@@ -29,6 +29,7 @@ outputs per-cell class probabilities (the FOMO output layer).
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import random
 
@@ -65,9 +66,11 @@ def parse_args() -> argparse.Namespace:
 
 def load_split(data_dir: str, split: str) -> tuple[np.ndarray, list]:
     x = np.load(os.path.join(data_dir, f"X_split_{split}.npy"))
-    y = np.load(os.path.join(data_dir, f"Y_split_{split}.npy"), allow_pickle=True)
-    # Y is a JSON/object array of per-sample dicts; normalise to a Python list.
-    labels = y.tolist() if isinstance(y, np.ndarray) else list(y)
+    # For object detection, Y_split_*.npy is a JSON *text* file (an array of
+    # per-sample dicts), not a NumPy array – despite the .npy extension. Read it
+    # as JSON, matching how Edge Impulse's own object-detection blocks load it.
+    with open(os.path.join(data_dir, f"Y_split_{split}.npy"), "r") as f:
+        labels = json.loads(f.read())
     return x, labels
 
 
