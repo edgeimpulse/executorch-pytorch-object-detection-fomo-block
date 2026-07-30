@@ -1,0 +1,50 @@
+{
+    "version": 1,
+    "type": "machine-learning",
+    "info": {
+        "name": "PyTorch FOMO object detection (ExecuTorch)",
+        "description": "A compact, fully-convolutional FOMO-style object detector in PyTorch. Trains on Edge Impulse bounding-box data by converting boxes to a centroid segmentation grid, and exports an ONNX model (FOMO output layer) for the platform plus an optional ExecuTorch .pte program.",
+        "operatesOn": "object_detection",
+        "objectDetectionLastLayer": "fomo",
+        "imageInputScaling": "0..1",
+        "indRequiresGpu": false,
+        "repositoryUrl": "https://github.com/edgeimpulse/pytorch-fomo-deploy"
+    },
+    "parameters": [
+        {
+            "name": "Number of training epochs",
+            "value": 60,
+            "type": "int",
+            "param": "epochs",
+            "help": "Number of passes over the training set."
+        },
+        {
+            "name": "Learning rate",
+            "value": 0.001,
+            "type": "float",
+            "param": "learning-rate",
+            "help": "Learning rate for the Adam optimizer."
+        },
+        {
+            "name": "Batch size",
+            "value": 16,
+            "type": "int",
+            "param": "batch-size",
+            "help": "Number of samples per gradient update."
+        },
+        {
+            "name": "Object weight",
+            "value": 100,
+            "type": "float",
+            "param": "object-weight",
+            "help": "Loss weight applied to foreground (object) grid cells relative to background. FOMO grids are dominated by background, so a high weight helps the model focus on objects."
+        },
+        {
+            "name": "Export ExecuTorch .pte",
+            "value": true,
+            "type": "flag",
+            "param": "export-pte",
+            "help": "Also export an ExecuTorch program (model.pte) alongside the ONNX model. The .pte is not used by the Edge Impulse SDK but is handy for native PyTorch/ExecuTorch deployment."
+        }
+    ]
+}
