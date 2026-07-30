@@ -109,6 +109,28 @@ def build_label_map(*label_sets: list) -> dict[int, int]:
     return {label: idx + 1 for idx, label in enumerate(sorted(raw))}
 
 
+def resolve_num_classes(info_file: str | None, label_map: dict[int, int]) -> int:
+    """Return the number of output channels (foreground classes + background).
+
+    Edge Impulse declares the authoritative class list in train_input.json
+    (passed via --info-file). Sizing the head from the data is unreliable: a
+    split may not contain every class, producing a head whose width disagrees
+    with Edge Impulse's evaluator and making metric calculation fail (reported
+    as 0% accuracy). We size from the declared class list (+1 for background),
+    and only fall back to the observed labels for local runs without an info
+    file.
+    """
+    if info_file:
+        try:
+            with open(info_file) as f:
+                classes = json.load(f).get("classes")
+            if classes:
+                return len(classes) + 1
+        except (OSError, ValueError):
+            pass
+    return len(label_map) + 1
+
+
 def boxes_to_grid(
     labels: list,
     label_map: dict[int, int],
@@ -245,12 +267,12 @@ def main() -> None:
 
     in_channels, img_h, img_w = x_train.shape[1], x_train.shape[2], x_train.shape[3]
     label_map = build_label_map(y_train, y_test)
-    num_classes = len(label_map) + 1  # + background (channel 0)
     if not label_map:
         raise ValueError(
             "No bounding boxes found in the training labels. This block requires "
             "an object-detection dataset labelled with bounding boxes."
         )
+    num_classes = resolve_num_classes(args.info_file, label_map)  # incl. background
 
     model = build_model(in_channels=in_channels, num_classes=num_classes).to(device)
 

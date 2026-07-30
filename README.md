@@ -65,6 +65,17 @@ edge-impulse-blocks push
 
 The block then appears under **Create impulse → Add learning block** (for object-detection projects) in Studio.
 
+## Walkthrough in Studio
+
+The screenshots below are from an object-detection project that uses this FOMO block end to end.
+
+| Step | Screenshot |
+|------|------------|
+| Create impulse (Image processing + this learning block) | ![Create impulse](assets/create-impulse.png) |
+| Training | ![Training](assets/training.png) |
+| Model testing | ![Model testing](assets/model-testing.png) |
+| Deployment (incl. ExecuTorch `.pte` export target) | ![Deployment](assets/deployment.png) |
+
 ## Notes
 
 - Use **square** input resolutions that are multiples of 8 (e.g. 96×96, 160×160). FOMO is fully convolutional, so only the aspect ratio is fixed.
